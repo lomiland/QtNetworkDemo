@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>346</width>
-    <height>205</height>
+    <width>690</width>
+    <height>566</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <widget class="QLineEdit" name="ip_edit">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>30</y>
+      <x>400</x>
+      <y>20</y>
       <width>111</width>
       <height>20</height>
      </rect>
@@ -30,8 +30,8 @@
    <widget class="QLineEdit" name="port_edit">
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>30</y>
+      <x>530</x>
+      <y>20</y>
       <width>51</width>
       <height>20</height>
      </rect>
@@ -43,8 +43,8 @@
    <widget class="QPushButton" name="connect_button">
     <property name="geometry">
      <rect>
-      <x>230</x>
-      <y>30</y>
+      <x>600</x>
+      <y>20</y>
       <width>80</width>
       <height>20</height>
      </rect>
@@ -56,8 +56,8 @@
    <widget class="QLineEdit" name="send_edit">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>60</y>
+      <x>400</x>
+      <y>50</y>
       <width>181</width>
       <height>20</height>
      </rect>
@@ -66,8 +66,8 @@
    <widget class="QPushButton" name="send_button">
     <property name="geometry">
      <rect>
-      <x>230</x>
-      <y>60</y>
+      <x>600</x>
+      <y>50</y>
       <width>81</width>
       <height>21</height>
      </rect>
@@ -79,8 +79,8 @@
    <widget class="QLineEdit" name="receive_edit">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>90</y>
+      <x>400</x>
+      <y>80</y>
       <width>181</width>
       <height>20</height>
      </rect>
@@ -89,8 +89,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>230</x>
-      <y>90</y>
+      <x>600</x>
+      <y>80</y>
       <width>81</width>
       <height>16</height>
      </rect>
@@ -105,8 +105,8 @@
    <widget class="QPushButton" name="disconnect_button">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>120</y>
+      <x>400</x>
+      <y>110</y>
       <width>281</width>
       <height>21</height>
      </rect>
@@ -115,14 +115,36 @@
      <string>Disconnect</string>
     </property>
    </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>398</x>
+      <y>143</y>
+      <width>281</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 24pt &quot;Microsoft YaHei UI&quot;;</string>
+    </property>
+    <property name="text">
+     <string>倒计时</string>
+    </property>
+    <property name="textFormat">
+     <enum>Qt::AutoText</enum>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>346</width>
-     <height>17</height>
+     <width>690</width>
+     <height>19</height>
     </rect>
    </property>
   </widget>
