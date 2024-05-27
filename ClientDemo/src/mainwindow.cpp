@@ -1,13 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "surakarta_agent_base.h"
-#include "surakarta_agent_mine.h"
-#include "surakarta_board.h"
 #include "surakarta_common.h"
-#include "surakarta_game.h"
 #include "surakarta_piece.h"
-#include "surakarta_reason.h"
-#include "surakarta_rule_manager.h"
 #include "result1.h"
 #include "result2.h"
 #include "result3.h"
@@ -21,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
     {
         p[i].init(i);
     }
+    game=new SurakartaGame(ui->centralwidget,6);
+    game->StartGame();
     selectid=-1;
     time=10;
     ti = new QTimer(this);
@@ -35,7 +31,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->label_3->setFont(font);
     ui->ip_edit->setText(ip);
     ui->port_edit->setText(QString::number(port));
-    ui->ready_button->setEnabled(false);
     ui->move_button->setEnabled(false);
     ui->giveup_button->setEnabled(false);
     ui->ai_button->setEnabled(false);
@@ -48,28 +43,28 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->connect_button, &QPushButton::clicked, this, &MainWindow::connectToServer);
     connect(ui->disconnect_button, &QPushButton::clicked, this, &MainWindow::disconnectFromServer);
     connect(ui->move_button, &QPushButton::clicked, this, &MainWindow::move);
-    connect(ui->ready_button, &QPushButton::clicked, this, &MainWindow::ready);
     connect(socket, &NetworkSocket::receive, this, &MainWindow::receiveMessage);
-    connect(ti,SIGNAL(receive()),this,SLOT(TimeOut()));
+    connect(ti,&QTimer::timeout,this,&MainWindow::TimeOut);
     connect(ui->giveup_button,&QPushButton::clicked,[=](){
-        socket->send(NetworkData(OPCODE::GIVEUP_OP, "", "", ""));
+        socket->send(NetworkData(OPCODE::GIVEUP_OP, player1, "", ""));
     });
     connect(ui->ai_button,&QPushButton::clicked,[=](){
         isAI=!isAI;
     });
+    this->socket->base()->waitForConnected(2000);
+    file.setFileName("D:\\Qt\\Qthomework\\QtNetWorkDemo\\ClientDemo\\recoadc.txt");
 }
 
 void MainWindow::connected_successfully() {
     ui->connect_button->setEnabled(false);
     ui->disconnect_button->setEnabled(true);
-    ui->ready_button->setEnabled(true);
     ui->move_button->setEnabled(true);
     ui->giveup_button->setEnabled(true);
     ui->ai_button->setEnabled(true);
     ui->port_edit->setReadOnly(true);
     ui->ip_edit->setText("Connected");
     ui->ip_edit->setReadOnly(true);
-    socket->send(NetworkData(OPCODE::READY_OP, "", "", ""));
+    ready();
 }
 
 void MainWindow::connectToServer() {
@@ -84,12 +79,16 @@ void MainWindow::disconnectFromServer() {
     socket->bye();
     ui->connect_button->setEnabled(true);
     ui->disconnect_button->setEnabled(false);
-    ui->ready_button->setEnabled(false);
     ui->move_button->setEnabled(false);
     ui->giveup_button->setEnabled(false);
     ui->port_edit->setReadOnly(false);
     ui->ip_edit->setReadOnly(false);
+    ui->ai_button->setEnabled(false);
     ui->ip_edit->setText(ip);
+    ti->stop();
+    ui->label_2->setText("倒计时");
+    ui->label_3->setText("玩家信息");
+    time=10;
     for(int i=0;i<24;i++){
         p[i].init(i);
         selectid=-1;
@@ -104,14 +103,16 @@ void MainWindow::disconnectFromServer() {
 
 void MainWindow::move() {
     QString message = ui->send_edit->text();
-    auto whole_block = message;
+    QString whole_block = message;
     auto blocks = whole_block.split(' ');
-    QString move[2];
+    QString move[3];
     int i=0;
     for (const auto& block : blocks) {
         move[i++]=block;
     }
-    socket->send(NetworkData(OPCODE::MOVE_OP, move[0], move[1], ""));
+    socket->send(NetworkData(OPCODE::MOVE_OP, move[0], move[1],move[2]));
+    file.write((move[0]+"-"+move[1]+" ").toUtf8());
+    file.flush();
     ui->send_edit->clear();
     ti->stop();
     ui->label_2->setText("倒计时");
@@ -119,7 +120,7 @@ void MainWindow::move() {
 }
 void MainWindow::ready() {
     QString message = ui->send_edit->text();
-    auto whole_block = message;
+    QString whole_block = message;
     auto blocks = whole_block.split(' ');
     QString move[3];
     int i=0;
@@ -127,27 +128,21 @@ void MainWindow::ready() {
         move[i++]=block;
     }
     player1=move[0];
-    socket->send(NetworkData(OPCODE::MOVE_OP, move[0], move[1], move[2]));
+    socket->send(NetworkData(OPCODE::READY_OP, move[0], move[1], move[2]));
     ui->send_edit->clear();
 }
 void MainWindow::receiveMessage(NetworkData data) {
+    qDebug()<<"ok";
+    if(data.op==OPCODE::REJECT_OP)
+    {
+        ui->label_3->setText("请重新输入");
+    }
     if(data.op==OPCODE::READY_OP)
     {
         player2=data.data1;
         if(data.data2=="1")
         {
-            playercolor2=piececolor::BLACK;
-            playercolor1=piececolor::WHITE;
-            QString content=player1;
-            content += " ";
-            content +="WHITE<br>";
-            content +=player2;
-            content += " ";
-            content +="BLACK";
-            ui->receive_edit->setText(content);
-        }
-        if(data.data2=="2")
-        {
+            game->game_info_->current_player_=SurakartaPlayer::BLACK;
             playercolor2=piececolor::WHITE;
             playercolor1=piececolor::BLACK;
             QString content=player1;
@@ -156,6 +151,36 @@ void MainWindow::receiveMessage(NetworkData data) {
             content +=player2;
             content += " ";
             content +="WHITE";
+            ui->label_3->setText(content);
+            isAI=true;
+            file.open(QIODevice::WriteOnly);
+            agent=new SurakartaAgentMine(game->GetBoard(),game->GetGameInfo(),game->GetRuleManager());
+            ti->start(1000);
+            SurakartaMove best_move=agent->CalculateMove();
+            QString str=QString::number(best_move.from.x);
+            QString str1=QString::number(best_move.from.y);
+            str=change(str);
+            str+=str1;
+            str1=QString::number(best_move.to.x);
+            QString str2=QString::number(best_move.to.y);
+           str1=change(str1);
+            str1+=str2;
+            file.write((str+"-"+str1+" ").toUtf8());
+            file.flush();
+            socket->send(NetworkData(OPCODE::MOVE_OP,str,str1, ""));
+        }
+        if(data.data2=="2")
+        {
+            game->game_info_->current_player_=SurakartaPlayer::WHITE;
+            playercolor2=piececolor::BLACK;
+            playercolor1=piececolor::WHITE;
+            QString content=player1;
+            content += " ";
+            content +="WHITE<br>";
+            content +=player2;
+            content += " ";
+            content +="BLACK";
+            ui->label_3->setText(content);
         }
     }
     if(data.op==OPCODE::END_OP)
@@ -188,20 +213,20 @@ void MainWindow::receiveMessage(NetworkData data) {
     }
     if(data.op==OPCODE::MOVE_OP)
     {
-        TimeOut();
+        qDebug()<<"ok";
         QString content=data.data1;
         content += "->";
         content +=data.data2;
         ui->receive_edit->setText(content);
         int j=0,fromto[4]={0};
         for (int i=0;i<data.data1.length();i++) {
-            if(data.data2[i] <= '9'&&data.data2[i] >= '0')
-            {
-                fromto[j++]=data.data2[i].unicode()-48;
-            }
-            if(data.data2[i] <= 'Z'&&data.data2[i] >= 'A')
+            if(data.data1[i] <= 'Z'&&data.data1[i] >= 'A')
             {
                 fromto[j++]=data.data2[i].unicode()-65;
+            }
+            if(data.data1[i] <= '9'&&data.data1[i] >= '0')
+            {
+                fromto[j++]=data.data2[i].unicode()-48;
             }
         }
         for (int i=0;i<data.data2.length();i++) {
@@ -215,6 +240,10 @@ void MainWindow::receiveMessage(NetworkData data) {
             }
         }
         for (int i = 0; i <24; ++i) {
+            if(p[i]._row==fromto[2]&&p[i]._col==fromto[3]&&p[i]._dead==false)
+            {
+                p[i]._dead=true;
+            }
             if(p[i]._row==fromto[0]&&p[i]._col==fromto[1]&&p[i]._dead==false)
             {
                 selectid=i;
@@ -224,23 +253,29 @@ void MainWindow::receiveMessage(NetworkData data) {
                 for(int i=0;i<24;i++){
                     drawpiece(painter,i);
                 }
+                update();
                 selectid=-1;
                 break;
             }
         }
+        ti->start(1000);
         if(isAI==true)
         {
-            SurakartaAgentMine obj(board,game_info,rule_manager);
-            SurakartaMove best_move=obj.CalculateMove();
+            file.open(QIODevice::WriteOnly);
+            agent=new SurakartaAgentMine(game->GetBoard(),game->GetGameInfo(),game->GetRuleManager());
+            SurakartaMove best_move=agent->CalculateMove();
             QString str=QString::number(best_move.from.x);
             QString str1=QString::number(best_move.from.y);
-            str1=change(str1);
+            str=change(str);
             str+=str1;
             str1=QString::number(best_move.to.x);
             QString str2=QString::number(best_move.to.y);
-            str2=change(str2);
+            str1=change(str1);
             str1+=str2;
-            socket->send(NetworkData(OPCODE::MOVE_OP,str,str2, ""));
+            socket->send(NetworkData(OPCODE::MOVE_OP,str,str1, ""));
+            ti->stop();
+            ui->label_2->setText("倒计时");
+            time=10;
         }
     }
 }
@@ -263,30 +298,31 @@ QPoint MainWindow::center(int id){
 
 QString MainWindow::change(QString a)
 {
-    if(a=="1")
+    if(a=="0")
     {
         return "A";
     }
-    if(a=="2")
+    if(a=="1")
     {
         return "B";
     }
-    if(a=="3")
+    if(a=="2")
     {
         return "C";
     }
-    if(a=="4")
+    if(a=="3")
     {
         return "D";
     }
-    if(a=="5")
+    if(a=="4")
     {
         return "E";
     }
-    if(a=="6")
+    if(a=="5")
     {
         return "F";
     }
+    return 0;
 }
 
 void MainWindow::paintEvent(QPaintEvent*){
@@ -352,6 +388,7 @@ void MainWindow::TimeOut()
     {
         ui->label_2->setText(qstime);
         time--;
+        update();
     }
     else
     {
