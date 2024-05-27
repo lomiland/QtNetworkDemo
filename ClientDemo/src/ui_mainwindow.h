@@ -38,7 +38,6 @@ public:
     QLabel *label_3;
     QPushButton *giveup_button;
     QPushButton *move_button;
-    QPushButton *ready_button;
     QPushButton *ai_button;
 
     void setupUi(QMainWindow *MainWindow)
@@ -83,9 +82,6 @@ public:
         move_button = new QPushButton(centralwidget);
         move_button->setObjectName(QString::fromUtf8("move_button"));
         move_button->setGeometry(QRect(230, 30, 80, 20));
-        ready_button = new QPushButton(centralwidget);
-        ready_button->setObjectName(QString::fromUtf8("ready_button"));
-        ready_button->setGeometry(QRect(230, 30, 80, 20));
         ai_button = new QPushButton(centralwidget);
         ai_button->setObjectName(QString::fromUtf8("ready_button"));
         ai_button->setGeometry(QRect(230, 30, 80, 20));
@@ -116,12 +112,10 @@ public:
         label_3->setText(QCoreApplication::translate("MainWindow", "玩家信息", nullptr));
         giveup_button->setText(QCoreApplication::translate("MainWindow", "RESIGN_OP", nullptr));
         move_button->setText(QCoreApplication::translate("MainWindow", "MOVE_OP", nullptr));
-        ready_button->setText(QCoreApplication::translate("MainWindow", "READY_OP", nullptr));
         ai_button->setText(QCoreApplication::translate("MainWindow", "AI", nullptr));
-        ai_button->move(700,175);
-        ready_button->move(700,100);
-        giveup_button->move(700,150);
-        move_button->move(700,125);
+        ai_button->move(700,150);
+        giveup_button->move(700,125);
+        move_button->move(700,100);
         label_2->move(500,125);
         label_3->move(500,225);
         connect_button->move(700,25);
