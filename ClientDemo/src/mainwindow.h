@@ -4,8 +4,10 @@
 #include <QMainWindow>
 #include "../../NetworkLibrary/networkdata.h"
 #include "../../NetworkLibrary/networksocket.h"
+#include "surakarta_game.h"
 #include "surakarta_board.h"
 #include "surakarta_common.h"
+#include "surakarta_agent_mine.h"
 #include "surakarta_rule_manager.h"
 #include <QPainter>
 #include <QBrush>
@@ -13,6 +15,7 @@
 #include<QPaintEvent>
 #include <QDialog>
 #include <QTimer>
+#include <QFile>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -74,10 +77,11 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    std::shared_ptr<SurakartaBoard> board;
-    std::shared_ptr<SurakartaGameInfo> game_info;
-    std::shared_ptr<SurakartaRuleManager> rule_manager;
+    QFile file;
+    bool fileopen=false,isapper=false,forward=true;
     QString change(QString a);
+    SurakartaGame *game;
+SurakartaAgentMine *agent;
     bool isAI=false;
     void AIMove();
     piececolor playercolor1;
