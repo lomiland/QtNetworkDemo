@@ -151,23 +151,31 @@ void MainWindow::receiveMessage(NetworkData data) {
             content += " ";
             content +="WHITE";
             ui->label_3->setText(content);
-            //isAI=true;
+            isAI=true;
             file.open(QIODevice::WriteOnly);
-            //agent=new SurakartaAgentMine(game->GetBoard(),game->GetGameInfo(),game->GetRuleManager());
+            if(playercolor1==piececolor::BLACK)
+                game->game_info_->current_player_=PieceColor::BLACK;
+            if(playercolor1==piececolor::WHITE)
+                game->game_info_->current_player_=PieceColor::WHITE;
+            agent=new SurakartaAgentMine(game->GetBoard(),game->GetGameInfo(),game->GetRuleManager());
             ti->start(1000);
-            //SurakartaMove best_move=agent->CalculateMove();
-            //game->Move(best_move);
-            //QString str=QString::number(best_move.from.x);
-            //QString str1=QString::number(best_move.from.y);
-            //str=change(str);
-            //str+=str1;
-            //str1=QString::number(best_move.to.x);
-            //QString str2=QString::number(best_move.to.y);
-           //str1=change(str1);
-            //str1+=str2;
-            //file.write((str+"-"+str1+" ").toUtf8());
-            //file.flush();
-            //socket->send(NetworkData(OPCODE::MOVE_OP,str,str1, ""));
+            SurakartaMove best_move=agent->CalculateMove();
+            game->Move(best_move);
+            if(playercolor1==piececolor::BLACK)
+                game->game_info_->current_player_=PieceColor::BLACK;
+            if(playercolor1==piececolor::WHITE)
+                game->game_info_->current_player_=PieceColor::WHITE;
+            QString str=QString::number(best_move.from.x);
+            QString str1=QString::number(best_move.from.y);
+            str=change(str);
+            str+=str1;
+            str1=QString::number(best_move.to.x);
+            QString str2=QString::number(best_move.to.y);
+           str1=change(str1);
+            str1+=str2;
+            file.write((str+"-"+str1+" ").toUtf8());
+            file.flush();
+            socket->send(NetworkData(OPCODE::MOVE_OP,str,str1, ""));
         }
         if(data.data2=="2")
         {
@@ -181,7 +189,7 @@ void MainWindow::receiveMessage(NetworkData data) {
             content += " ";
             content +="BLACK";
             ui->label_3->setText(content);
-            //isAI=true;
+            isAI=true;
         }
     }
     if(data.op==OPCODE::END_OP)
@@ -257,25 +265,33 @@ void MainWindow::receiveMessage(NetworkData data) {
         if((step%2!=0&&playercolor1==piececolor::WHITE)||(step%2==0&&playercolor1==piececolor::BLACK))
         {
          ti->start(1000);
-        //if(isAI==true)
-        //{
-           // file.open(QIODevice::WriteOnly);
-            //agent=new SurakartaAgentMine(game->GetBoard(),game->GetGameInfo(),game->GetRuleManager());
-            //SurakartaMove best_move=agent->CalculateMove();
-            //game->Move(best_move);
-            //QString str=QString::number(best_move.from.y);
-            //QString str1=QString::number(best_move.from.x);
-            //str=change(str);
-            //str+=str1;
-            //str1=QString::number(best_move.to.y);
-            //QString str2=QString::number(best_move.to.x);
-            //str1=change(str1);
-            //str1+=str2;
-            //socket->send(NetworkData(OPCODE::MOVE_OP,str,str1, ""));
-            //ti->stop();
-            //ui->label_2->setText("倒计时");
-            //time=10;
-        //}
+        if(isAI==true)
+        {
+           file.open(QIODevice::WriteOnly);
+            if(playercolor1==piececolor::BLACK)
+                game->game_info_->current_player_=PieceColor::BLACK;
+            if(playercolor1==piececolor::WHITE)
+                game->game_info_->current_player_=PieceColor::WHITE;
+            agent=new SurakartaAgentMine(game->GetBoard(),game->GetGameInfo(),game->GetRuleManager());
+            SurakartaMove best_move=agent->CalculateMove();
+            game->Move(best_move);
+            QString str=QString::number(best_move.from.y);
+            QString str1=QString::number(best_move.from.x);
+            str=change(str);
+            str+=str1;
+            str1=QString::number(best_move.to.y);
+            QString str2=QString::number(best_move.to.x);
+            str1=change(str1);
+            str1+=str2;
+            socket->send(NetworkData(OPCODE::MOVE_OP,str,str1, ""));
+            if(playercolor1==piececolor::BLACK)
+                game->game_info_->current_player_=PieceColor::BLACK;
+            if(playercolor1==piececolor::WHITE)
+                game->game_info_->current_player_=PieceColor::WHITE;
+            ti->stop();
+            ui->label_2->setText("倒计时");
+            time=10;
+        }
         }
     }
 }
@@ -399,4 +415,3 @@ void MainWindow::TimeOut()
         time=10;
     }
 }
-
