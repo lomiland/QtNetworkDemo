@@ -132,7 +132,6 @@ void MainWindow::ready() {
     ui->send_edit->clear();
 }
 void MainWindow::receiveMessage(NetworkData data) {
-    qDebug()<<"ok";
     if(data.op==OPCODE::REJECT_OP)
     {
         ui->label_3->setText("请重新输入");
@@ -152,22 +151,23 @@ void MainWindow::receiveMessage(NetworkData data) {
             content += " ";
             content +="WHITE";
             ui->label_3->setText(content);
-            isAI=true;
+            //isAI=true;
             file.open(QIODevice::WriteOnly);
-            agent=new SurakartaAgentMine(game->GetBoard(),game->GetGameInfo(),game->GetRuleManager());
+            //agent=new SurakartaAgentMine(game->GetBoard(),game->GetGameInfo(),game->GetRuleManager());
             ti->start(1000);
-            SurakartaMove best_move=agent->CalculateMove();
-            QString str=QString::number(best_move.from.x);
-            QString str1=QString::number(best_move.from.y);
-            str=change(str);
-            str+=str1;
-            str1=QString::number(best_move.to.x);
-            QString str2=QString::number(best_move.to.y);
-           str1=change(str1);
-            str1+=str2;
-            file.write((str+"-"+str1+" ").toUtf8());
-            file.flush();
-            socket->send(NetworkData(OPCODE::MOVE_OP,str,str1, ""));
+            //SurakartaMove best_move=agent->CalculateMove();
+            //game->Move(best_move);
+            //QString str=QString::number(best_move.from.x);
+            //QString str1=QString::number(best_move.from.y);
+            //str=change(str);
+            //str+=str1;
+            //str1=QString::number(best_move.to.x);
+            //QString str2=QString::number(best_move.to.y);
+           //str1=change(str1);
+            //str1+=str2;
+            //file.write((str+"-"+str1+" ").toUtf8());
+            //file.flush();
+            //socket->send(NetworkData(OPCODE::MOVE_OP,str,str1, ""));
         }
         if(data.data2=="2")
         {
@@ -181,6 +181,7 @@ void MainWindow::receiveMessage(NetworkData data) {
             content += " ";
             content +="BLACK";
             ui->label_3->setText(content);
+            //isAI=true;
         }
     }
     if(data.op==OPCODE::END_OP)
@@ -207,75 +208,74 @@ void MainWindow::receiveMessage(NetworkData data) {
                 this->page3->show();
             }
         }
-        else{
-
-        }
     }
     if(data.op==OPCODE::MOVE_OP)
     {
-        qDebug()<<"ok";
+        step++;
         QString content=data.data1;
         content += "->";
         content +=data.data2;
         ui->receive_edit->setText(content);
-        int j=0,fromto[4]={0};
-        for (int i=0;i<data.data1.length();i++) {
-            if(data.data1[i] <= 'Z'&&data.data1[i] >= 'A')
-            {
-                fromto[j++]=data.data2[i].unicode()-65;
-            }
-            if(data.data1[i] <= '9'&&data.data1[i] >= '0')
-            {
-                fromto[j++]=data.data2[i].unicode()-48;
-            }
-        }
-        for (int i=0;i<data.data2.length();i++) {
-            if(data.data2[i] <= '9'&&data.data2[i] >= '0')
-            {
-                fromto[j++]=data.data2[i].unicode()-48;
-            }
-            if(data.data2[i] <= 'Z'&&data.data2[i] >= 'A')
-            {
-                fromto[j++]=data.data2[i].unicode()-65;
-            }
-        }
+        int fromto[4]={0};
+        fromto[0]=data.data1[0].unicode()-65;
+        fromto[1]=data.data1[1].unicode()-48;
+        fromto[2]=data.data2[0].unicode()-65;
+        fromto[3]=data.data2[1].unicode()-48;
         for (int i = 0; i <24; ++i) {
             if(p[i]._row==fromto[2]&&p[i]._col==fromto[3]&&p[i]._dead==false)
             {
                 p[i]._dead=true;
             }
+        }
+        for (int i = 0; i <24; ++i){
             if(p[i]._row==fromto[0]&&p[i]._col==fromto[1]&&p[i]._dead==false)
             {
                 selectid=i;
                 p[i]._row=fromto[2];
                 p[i]._col=fromto[3];
-                QPainter painter(this);
-                for(int i=0;i<24;i++){
-                    drawpiece(painter,i);
-                }
-                update();
-                selectid=-1;
                 break;
             }
         }
-        ti->start(1000);
-        if(isAI==true)
+        QPainter painter(this);
+        for(int x=0;x<24;x++){
+            drawpiece(painter,x);
+        }
+        update();
+        if((step%2==0&&playercolor1==piececolor::WHITE)||(step%2!=0&&playercolor1==piececolor::BLACK))
         {
-            file.open(QIODevice::WriteOnly);
-            agent=new SurakartaAgentMine(game->GetBoard(),game->GetGameInfo(),game->GetRuleManager());
-            SurakartaMove best_move=agent->CalculateMove();
-            QString str=QString::number(best_move.from.x);
-            QString str1=QString::number(best_move.from.y);
-            str=change(str);
-            str+=str1;
-            str1=QString::number(best_move.to.x);
-            QString str2=QString::number(best_move.to.y);
-            str1=change(str1);
-            str1+=str2;
-            socket->send(NetworkData(OPCODE::MOVE_OP,str,str1, ""));
-            ti->stop();
-            ui->label_2->setText("倒计时");
-            time=10;
+            SurakartaMove move;
+            move.from.y=fromto[0];
+            move.from.x=fromto[1];
+            move.to.y=fromto[2];
+            move.to.x=fromto[3];
+            if(game->game_info_->current_player_==PieceColor::BLACK)
+                move.player=PieceColor::WHITE;
+            if(game->game_info_->current_player_==PieceColor::WHITE)
+                move.player=PieceColor::BLACK;
+            game->Move(move);
+        }
+        if((step%2!=0&&playercolor1==piececolor::WHITE)||(step%2==0&&playercolor1==piececolor::BLACK))
+        {
+         ti->start(1000);
+        //if(isAI==true)
+        //{
+           // file.open(QIODevice::WriteOnly);
+            //agent=new SurakartaAgentMine(game->GetBoard(),game->GetGameInfo(),game->GetRuleManager());
+            //SurakartaMove best_move=agent->CalculateMove();
+            //game->Move(best_move);
+            //QString str=QString::number(best_move.from.y);
+            //QString str1=QString::number(best_move.from.x);
+            //str=change(str);
+            //str+=str1;
+            //str1=QString::number(best_move.to.y);
+            //QString str2=QString::number(best_move.to.x);
+            //str1=change(str1);
+            //str1+=str2;
+            //socket->send(NetworkData(OPCODE::MOVE_OP,str,str1, ""));
+            //ti->stop();
+            //ui->label_2->setText("倒计时");
+            //time=10;
+        //}
         }
     }
 }
@@ -392,10 +392,11 @@ void MainWindow::TimeOut()
     }
     else
     {
-        socket->send(NetworkData(OPCODE::TIMEOUT_END_OP, "","", ""));
+        //socket->send(NetworkData(OPCODE::TIMEOUT_END_OP, "","", ""));
         ui->label_2->setText(qstime);
         ti->stop();
         ui->label_2->setText("倒计时");
         time=10;
     }
 }
+
