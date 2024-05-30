@@ -983,31 +983,14 @@ void MainWindow::receive_from_client(QTcpSocket* client, NetworkData data) {
             else if(player_color1==piececolor::BLACK&&from_id>=12&&from_id<24)
             {
                 move_reason=SurakartaIllegalMoveReason::NOT_PLAYER_PIECE;
-                if(player_color1==piececolor::BLACK)
-                {
-                    send_to_another_client(client1,NetworkData(OPCODE::END_OP,"8","7","2"));
-                    send_to_another_client(client2,NetworkData(OPCODE::END_OP,"8","7","2"));
-                }
-                else if(player_color1==piececolor::WHITE&&from_id<12&&from_id>=0)
+            send_to_another_client(client1,NetworkData(OPCODE::END_OP,"8","7","2"));
+            send_to_another_client(client2,NetworkData(OPCODE::END_OP,"8","7","2"));
+            }
+            else if(player_color1==piececolor::WHITE&&from_id<12&&from_id>=0)
                 {
                     send_to_another_client(client1,NetworkData(OPCODE::END_OP,"8","7","1"));
                     send_to_another_client(client2,NetworkData(OPCODE::END_OP,"8","7","1"));
                 }
-            }
-            else if((from_id<0&&from_id!=-1)||from_id>=24||(to_id<0&&to_id!=-1)||to_id>=24)
-            {
-                move_reason=SurakartaIllegalMoveReason::OUT_OF_BOARD;
-                if(player_color1==piececolor::BLACK)
-                {
-                    send_to_another_client(client1,NetworkData(OPCODE::END_OP,"6","7","2"));
-                    send_to_another_client(client2,NetworkData(OPCODE::END_OP,"6","7","2"));
-                }
-                else if(player_color1==piececolor::WHITE)
-                {
-                    send_to_another_client(client1,NetworkData(OPCODE::END_OP,"6","7","1"));
-                    send_to_another_client(client2,NetworkData(OPCODE::END_OP,"6","7","1"));
-                }
-            }
             else if((step%2==0&&player_color1==piececolor::BLACK)||(step%2!=0&&player_color1==piececolor::WHITE))
             {
                 move_reason=SurakartaIllegalMoveReason::NOT_PLAYER_TURN;
@@ -1080,6 +1063,8 @@ void MainWindow::receive_from_client(QTcpSocket* client, NetworkData data) {
                 else
                 {
                     move_reason=SurakartaIllegalMoveReason::ILLIGAL_CAPTURE_MOVE;
+                    send_to_another_client(client2,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                    send_to_another_client(client1,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
                     send_to_another_client(client1,NetworkData(OPCODE::END_OP,"9","7","1"));
                     send_to_another_client(client2,NetworkData(OPCODE::END_OP,"9","7","1"));
                 }
@@ -1093,11 +1078,15 @@ void MainWindow::receive_from_client(QTcpSocket* client, NetworkData data) {
                 move_reason=SurakartaIllegalMoveReason::NOT_PIECE;
                 if(player_color2==piececolor::BLACK)
                 {
+                    send_to_another_client(client2,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                    send_to_another_client(client1,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
                     send_to_another_client(client1,NetworkData(OPCODE::END_OP,"7","7","2"));
                     send_to_another_client(client2,NetworkData(OPCODE::END_OP,"7","7","2"));
                 }
                 else if(player_color2==piececolor::WHITE)
                 {
+                    send_to_another_client(client2,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                    send_to_another_client(client1,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
                     send_to_another_client(client1,NetworkData(OPCODE::END_OP,"7","7","1"));
                     send_to_another_client(client2,NetworkData(OPCODE::END_OP,"7","7","1"));
                 }
@@ -1105,45 +1094,33 @@ void MainWindow::receive_from_client(QTcpSocket* client, NetworkData data) {
             else if(player_color2==piececolor::BLACK&&from_id>=12&&from_id<24)
             {
                 move_reason=SurakartaIllegalMoveReason::NOT_PLAYER_PIECE;
-                if(player_color2==piececolor::BLACK)
-                {
-                    send_to_another_client(client1,NetworkData(OPCODE::END_OP,"8","7","2"));
-                    send_to_another_client(client2,NetworkData(OPCODE::END_OP,"8","7","2"));
-                }
-                else if(player_color2==piececolor::WHITE&&from_id<12&&from_id>=0)
-                {
-                    send_to_another_client(client1,NetworkData(OPCODE::END_OP,"8","7","1"));
-                    send_to_another_client(client2,NetworkData(OPCODE::END_OP,"8","7","1"));
-                }
-            }
-            else if((from_id<0&&from_id!=-1)||from_id>=24||(to_id<0&&to_id!=-1)||to_id>=24)
-            {
-                move_reason=SurakartaIllegalMoveReason::OUT_OF_BOARD;
-                if(player_color2==piececolor::BLACK)
-                {
-                    send_to_another_client(client1,NetworkData(OPCODE::END_OP,"6","7","2"));
-                    send_to_another_client(client2,NetworkData(OPCODE::END_OP,"6","7","2"));
-                }
-                else if(player_color2==piececolor::WHITE)
-                {
-                    send_to_another_client(client1,NetworkData(OPCODE::END_OP,"6","7","1"));
-                    send_to_another_client(client2,NetworkData(OPCODE::END_OP,"6","7","1"));
-                }
+                send_to_another_client(client2,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                send_to_another_client(client1,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                send_to_another_client(client1,NetworkData(OPCODE::END_OP,"8","7","2"));
+                send_to_another_client(client2,NetworkData(OPCODE::END_OP,"8","7","2"));
             }
             else if(player_color2==piececolor::WHITE&&from_id<12&&from_id>=0)
             {
-                move_reason=SurakartaIllegalMoveReason::NOT_PLAYER_PIECE;
+                  move_reason=SurakartaIllegalMoveReason::NOT_PLAYER_PIECE;
+                    send_to_another_client(client2,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                    send_to_another_client(client1,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                    send_to_another_client(client1,NetworkData(OPCODE::END_OP,"8","7","1"));
+                    send_to_another_client(client2,NetworkData(OPCODE::END_OP,"8","7","1"));
             }
             else if((step%2==0&&player_color2==piececolor::BLACK)||(step%2!=0&&player_color2==piececolor::WHITE))
             {
                 move_reason=SurakartaIllegalMoveReason::NOT_PLAYER_TURN;
                 if(player_color2==piececolor::BLACK)
                 {
+                    send_to_another_client(client2,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                    send_to_another_client(client1,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
                     send_to_another_client(client1,NetworkData(OPCODE::END_OP,"5","7","2"));
                     send_to_another_client(client2,NetworkData(OPCODE::END_OP,"5","7","2"));
                 }
                 if(player_color2==piececolor::WHITE)
                 {
+                    send_to_another_client(client2,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                    send_to_another_client(client1,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
                     send_to_another_client(client1,NetworkData(OPCODE::END_OP,"5","7","1"));
                     send_to_another_client(client2,NetworkData(OPCODE::END_OP,"5","7","1"));
                 }
@@ -1164,11 +1141,15 @@ void MainWindow::receive_from_client(QTcpSocket* client, NetworkData data) {
                     move_reason=SurakartaIllegalMoveReason::ILLIGAL_NON_CAPTURE_MOVE;
                     if(player_color2==piececolor::BLACK)
                     {
+                        send_to_another_client(client2,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                        send_to_another_client(client1,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
                         send_to_another_client(client1,NetworkData(OPCODE::END_OP,"10","7","2"));
                         send_to_another_client(client2,NetworkData(OPCODE::END_OP,"10","7","2"));
                     }
                     else if(player_color2==piececolor::WHITE)
                     {
+                        send_to_another_client(client2,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                        send_to_another_client(client1,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
                         send_to_another_client(client1,NetworkData(OPCODE::END_OP,"10","7","1"));
                         send_to_another_client(client2,NetworkData(OPCODE::END_OP,"10","7","1"));
                     }
@@ -1188,6 +1169,8 @@ void MainWindow::receive_from_client(QTcpSocket* client, NetworkData data) {
                 else
                 {
                     move_reason=SurakartaIllegalMoveReason::ILLIGAL_CAPTURE_MOVE;
+                    send_to_another_client(client2,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                    send_to_another_client(client1,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
                     send_to_another_client(client1,NetworkData(OPCODE::END_OP,"9","7","2"));
                     send_to_another_client(client2,NetworkData(OPCODE::END_OP,"9","7","2"));
                 }
@@ -1206,6 +1189,8 @@ void MainWindow::receive_from_client(QTcpSocket* client, NetworkData data) {
                 else
                 {
                     move_reason=SurakartaIllegalMoveReason::ILLIGAL_CAPTURE_MOVE;
+                    send_to_another_client(client2,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
+                    send_to_another_client(client1,NetworkData(OPCODE::MOVE_OP,data.data1,data.data2,""));
                     send_to_another_client(client1,NetworkData(OPCODE::END_OP,"9","7","1"));
                     send_to_another_client(client2,NetworkData(OPCODE::END_OP,"9","7","1"));
                 }
@@ -1334,3 +1319,4 @@ MainWindow::~MainWindow() {
     delete ui;
     delete server;
 }
+
